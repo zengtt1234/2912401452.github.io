@@ -48,6 +48,7 @@ THREE.CircleSweepPass = function(scene, camera, options) {
     this.depthMaterial.uniforms[ "fillColor" ].value = this.fillColor
     this.depthMaterial.uniforms[ "uProjectionInverse" ].value = uProjectionInverse
     this.depthMaterial.uniforms[ "uMatrixWorld" ].value = uMatrixWorld
+    // this.depthMaterial.defines = {TEST: ''}
 
     this.fsQuad = new THREE.Pass.FullScreenQuad( this.depthMaterial );
 }
@@ -61,18 +62,23 @@ THREE.CircleSweepPass.prototype = Object.assign( Object.create( THREE.Pass.proto
         this.depthMaterial.uniforms[ "uProjectionInverse" ].value = this.camera.projectionMatrixInverse;
         this.depthMaterial.uniforms[ "uMatrixWorld" ].value = this.camera.matrixWorld;
         
-        //仅扫光cube
         renderer.setRenderTarget( this.depthTarget );
-        const testSearch0 = scene.getObjectByName("group");
-        testSearch0.visible = true;
-        const testSearch = scene.getObjectByName("a");
-        testSearch.visible = false;
+        // handle object
+        scene.traverse((obj) => {
+            if(obj instanceof THREE.Mesh && !(obj.userData.enableCircleSweep)) {
+                obj.visible = false;
+            }
+        })
         renderer.render( this.scene, this.camera );
         renderer.setRenderTarget( null );
-        testSearch0.visible = true;
-        testSearch.visible = true;
 
         renderer.setRenderTarget( this.depthTargetFull );
+        // reset
+        scene.traverse((obj) => {
+            if(obj instanceof THREE.Mesh) {
+                obj.visible = obj.userData.recordVisible;
+            }
+        })
         renderer.render( this.scene, this.camera );
         renderer.setRenderTarget( null );
         this.fsQuad.render( renderer );
@@ -137,13 +143,21 @@ THREE.CircleSweepPass.prototype = Object.assign( Object.create( THREE.Pass.proto
                     float depth = texture2D(depthTexture, vUv).x;
                     float depthFull = texture2D(depthTextureFull, vUv).x;
                     vec3 wP = WorldPosFromDepth(depth, vPos, uProjectionInverse, uMatrixWorld);
+                    // for Test
+                    // vec3 center = center;
+                    // wP.z = 0.0;
+                    // center.z = 0.0;
+                    ////////////////////////
                     float dis = distance(wP, center);
                     float circleWidth = outerRadius - innerRadius;
+                    float halfCircleWidth = circleWidth / 2.0;
+                    float posPercent = (dis - innerRadius)/circleWidth;
                     if(dis < outerRadius && dis > innerRadius) {
                         if(fillType == 1) { // pure: 0 - linear: 1
                             bool depthTest = depth > depthFull;
-                            if(!depthTest) {
-                                gl_FragColor = vec4(mix(diff.xyz, fillColor, (dis - innerRadius)/circleWidth), 1.0);
+                            // linear: halfCircleWidth to outerRadius && halfCircleWidth to innerRadius
+                            if(!depthTest && depth < 1.0) {
+                                gl_FragColor = (dis - innerRadius) < halfCircleWidth ? vec4(mix(diff.xyz, fillColor, posPercent), 1.0) : vec4(mix(diff.xyz, fillColor, 1.0-(posPercent)), 1.0);
                             } else {
                                 gl_FragColor = diff;
                             }

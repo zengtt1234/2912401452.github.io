@@ -68,34 +68,48 @@
       document.body.appendChild( stats.dom );
 
       // --------
-      var geometry = new THREE.BoxBufferGeometry( 5, 5, 5 );
+      var geometry = new THREE.BoxBufferGeometry( 2, 2, 2 );
       let r = 50
       const group = new THREE.Group();
       group.name = 'group';
-      for(let i = 0;i < 15;i++) {
+      for(let i = 0;i < 100;i++) {
         var m = new THREE.Mesh(geometry.clone(), createRandomMaterial())
-        m.position.set(r*(Math.random()-0.5), 0, r*(Math.random()-0.5))
+        m.position.set(r*(Math.random()-0.5), 10, r*(Math.random()-0.5))
         m.rotation.x = Math.PI * Math.random()
         m.rotation.y = Math.PI * Math.random()
         m.rotation.z = Math.PI * Math.random()
+        m.userData.recordVisible = m.visible;
+        m.userData.enableCircleSweep = true;
         group.add(m)
       }
       scene.add(group);
       var planeGeometry = new THREE.PlaneGeometry( 105, 105, 5, 5 );
-      var planeMesh = new THREE.Mesh(planeGeometry);
+      var baseMaterial = new THREE.MeshBasicMaterial({
+          color: new THREE.Color('rgb(125, 160, 255)'),
+          // transparent: true, 
+          // opacity: 0.5
+          side: THREE.DoubleSide
+        })
+      var planeMesh = new THREE.Mesh(planeGeometry, baseMaterial);
       planeMesh.rotation.x = -Math.PI/2;
       planeMesh.position.y = -10;
       planeMesh.name = 'a';
+      planeMesh.userData.recordVisible = planeMesh.visible;
+      planeMesh.userData.enableCircleSweep = true;
       scene.add(planeMesh);
-      // console.log(planeMesh);
-      const testSearch = scene.getObjectByName("a");
-      console.log('---------------',testSearch);
+      // var planeMesh1 = new THREE.Mesh(planeGeometry, baseMaterial);
+      // planeMesh1.position.y = -10;
+      // planeMesh1.name = 'a';
+      // planeMesh1.userData.recordVisible = planeMesh1.visible;
+      // planeMesh1.userData.enableCircleSweep = true;
+      // scene.add(planeMesh1);
       var options = {
-        center: new THREE.Vector3(5, 0, 5),
-        innerRadius: 5,
-        outerRadius: 10,
+        center: new THREE.Vector3(0, 0, 0),
+        innerRadius: 0,
+        outerRadius: 0,
         fillType: 1, // pure: 0 - linear: 1
         fillColor: new THREE.Color(1, 1, 0)
+        // fillColor: new THREE.Color(0.6, 1, 1)
       }
       composerTarget =  new THREE.WebGLRenderTarget(
         window.innerWidth,
@@ -106,7 +120,6 @@
       );
       // var renderScene = new THREE.RenderPass( scene, camera )
       circleSweepPass = new THREE.CircleSweepPass(scene, camera, options);
-      debugger;
       composer = new THREE.EffectComposer( renderer, composerTarget );
       // composer = new THREE.EffectComposer( renderer );
       let scale = window.devicePixelRatio * 2 // 用于弥补后处理带来的图像精度损失
@@ -122,9 +135,9 @@
       window.onresize = onResize;
     }
 
-    function createRandomMaterial() {
+    function createRandomMaterial(inputColor) {
         return new THREE.MeshPhongMaterial({
-          color: Math.floor(Math.random()*(1<<24)), 
+          color: inputColor || Math.floor(Math.random()*(1<<24)), 
           // transparent: true, 
           // opacity: 0.5
         })
@@ -143,8 +156,10 @@
         circleSweepPass.depthMaterial.uniforms.innerRadius.value = -5
         circleSweepPass.depthMaterial.uniforms.outerRadius.value = 0
       }
-      circleSweepPass.depthMaterial.uniforms.innerRadius.value += 0.4
-      circleSweepPass.depthMaterial.uniforms.outerRadius.value += 0.4
+      circleSweepPass.depthMaterial.uniforms.innerRadius.value += 0.5
+      circleSweepPass.depthMaterial.uniforms.outerRadius.value += 1.2
+      // circleSweepPass.depthMaterial.uniforms.innerRadius.value += 0.4
+      // circleSweepPass.depthMaterial.uniforms.outerRadius.value += 0.4
     }
 
     function ang2rad(ang){
