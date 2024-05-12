@@ -12,6 +12,8 @@ THREE.CircleSweepPass = function(scene, camera, options) {
     this.outerRadius = options.outerRadius ? options.outerRadius : 0
     this.fillType = options.fillType ? options.fillType : 1 // pure: 0 - linear: 1
     this.fillColor = options.fillColor ? options.fillColor : new THREE.Color(1, 1, 1)
+    // -1: sphere 0: XOZ 1: XOY 2: YOZ
+    this.sweepPlane = options.sweepPlane !== undefined ? options.sweepPlane : -1
 
     this.depthTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight );
     this.depthTarget.texture.format = THREE.RGBFormat;
@@ -96,7 +98,8 @@ THREE.CircleSweepPass.prototype = Object.assign( Object.create( THREE.Pass.proto
                 "fillType": { value: this.fillType },
                 "fillColor": { value: this.fillColor },
                 'uProjectionInverse': {value: this.uProjectionInverse},
-                'uMatrixWorld': {value: this.uMatrixWorld}
+                'uMatrixWorld': {value: this.uMatrixWorld},
+                'sweepPlane': {value: this.sweepPlane}
             },
             transparent: true,
             vertexShader:
@@ -121,6 +124,7 @@ THREE.CircleSweepPass.prototype = Object.assign( Object.create( THREE.Pass.proto
                 uniform float outerRadius;
                 uniform int fillType;
                 uniform vec3 fillColor;
+                uniform int sweepPlane;
 
                 varying vec3 vPos;
                 varying vec2 vUv;
@@ -143,11 +147,20 @@ THREE.CircleSweepPass.prototype = Object.assign( Object.create( THREE.Pass.proto
                     float depth = texture2D(depthTexture, vUv).x;
                     float depthFull = texture2D(depthTextureFull, vUv).x;
                     vec3 wP = WorldPosFromDepth(depth, vPos, uProjectionInverse, uMatrixWorld);
-                    // for Test
-                    // vec3 center = center;
-                    // wP.z = 0.0;
-                    // center.z = 0.0;
-                    ////////////////////////
+                    // -1: sphere 0: XOZ 1: XOY 2: YOZ
+                    if(sweepPlane == 0) {
+                        vec3 center = center;
+                        wP.y = 0.0;
+                        center.y = 0.0;
+                    } else if(sweepPlane == 1){
+                        vec3 center = center;
+                        wP.z = 0.0;
+                        center.z = 0.0;
+                    } else if(sweepPlane == 2){
+                        vec3 center = center;
+                        wP.x = 0.0;
+                        center.x = 0.0;
+                    }
                     float dis = distance(wP, center);
                     float circleWidth = outerRadius - innerRadius;
                     float halfCircleWidth = circleWidth / 2.0;

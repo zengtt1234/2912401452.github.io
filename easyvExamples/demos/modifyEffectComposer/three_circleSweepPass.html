@@ -68,11 +68,11 @@
       document.body.appendChild( stats.dom );
 
       // --------
-      var geometry = new THREE.BoxBufferGeometry( 2, 2, 2 );
+      var geometry = new THREE.BoxBufferGeometry( 1, 1, 1 );
       let r = 50
       const group = new THREE.Group();
       group.name = 'group';
-      for(let i = 0;i < 100;i++) {
+      for(let i = 0;i < 50;i++) {
         var m = new THREE.Mesh(geometry.clone(), createRandomMaterial())
         m.position.set(r*(Math.random()-0.5), 10, r*(Math.random()-0.5))
         m.rotation.x = Math.PI * Math.random()
@@ -108,8 +108,10 @@
         innerRadius: 0,
         outerRadius: 0,
         fillType: 1, // pure: 0 - linear: 1
-        fillColor: new THREE.Color(1, 1, 0)
+        fillColor: new THREE.Color(1, 1, 0),
         // fillColor: new THREE.Color(0.6, 1, 1)
+        // -1: sphere 0: XOZ 1: XOY 2: YOZ
+        sweepPlane: 0
       }
       composerTarget =  new THREE.WebGLRenderTarget(
         window.innerWidth,
