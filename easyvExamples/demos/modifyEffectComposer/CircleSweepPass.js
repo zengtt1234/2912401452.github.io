@@ -63,6 +63,7 @@ THREE.CircleSweepPass.prototype = Object.assign( Object.create( THREE.Pass.proto
 
         this.depthMaterial.uniforms[ "uProjectionInverse" ].value = this.camera.projectionMatrixInverse;
         this.depthMaterial.uniforms[ "uMatrixWorld" ].value = this.camera.matrixWorld;
+        this.depthMaterial.uniforms[ "fillColor" ].value = this.fillColor;
         
         renderer.setRenderTarget( this.depthTarget );
         // handle object

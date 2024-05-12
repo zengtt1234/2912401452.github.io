@@ -19,6 +19,7 @@
     <script src="./ShaderPass.js"></script>
     <script src="./CopyShader.js"></script>
     <script src="./CircleSweepPass.js"></script>
+    <script src="./dat.gui.min.js"></script>
   </head>
   <body></body>
   <script>
@@ -176,5 +177,26 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       composerTarget.setSize(window.innerWidth, window.innerHeight);
     }
+
+    var params = {
+      color: 0xffffff,
+      // bloomStrength: 0.5,
+      // bloomThreshold: 0.58,
+      // bloomRadius: 1
+    };
+
+    var gui = new dat.GUI();
+    gui.addColor( params, 'color' ).onChange( function (value) {
+      circleSweepPass.fillColor = new THREE.Color(value);
+    } );
+    // gui.add( params, 'bloomThreshold', 0.0, 1.0 ).onChange( function ( value ) {
+    // 	// bloomPass.threshold = Number( value );
+    // } );
+    // gui.add( params, 'bloomStrength', 0.0, 3.0 ).onChange( function ( value ) {
+    // 	// bloomPass.strength = Number( value );
+    // } );
+    // gui.add( params, 'bloomRadius', 0.0, 1.0 ).step( 0.01 ).onChange( function ( value ) {
+    // 	// bloomPass.radius = Number( value );
+    // } );
   </script>
 </html>
