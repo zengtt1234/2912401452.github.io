@@ -106,8 +106,8 @@
       // scene.add(planeMesh1);
       var options = {
         center: new THREE.Vector3(0, 0, 0),
-        innerRadius: 0,
-        outerRadius: 0,
+        innerRadius: 1,
+        outerRadius: 40,
         fillType: 1, // pure: 0 - linear: 1
         fillColor: new THREE.Color(1, 1, 0),
         // fillColor: new THREE.Color(0.6, 1, 1)
@@ -161,8 +161,6 @@
       }
       circleSweepPass.depthMaterial.uniforms.innerRadius.value += 0.5
       circleSweepPass.depthMaterial.uniforms.outerRadius.value += 1.2
-      // circleSweepPass.depthMaterial.uniforms.innerRadius.value += 0.4
-      // circleSweepPass.depthMaterial.uniforms.outerRadius.value += 0.4
     }
 
     function ang2rad(ang){

@@ -149,29 +149,46 @@ THREE.CircleSweepPass.prototype = Object.assign( Object.create( THREE.Pass.proto
                     float depthFull = texture2D(depthTextureFull, vUv).x;
                     vec3 wP = WorldPosFromDepth(depth, vPos, uProjectionInverse, uMatrixWorld);
                     // -1: sphere 0: XOZ 1: XOY 2: YOZ
+                    // vec3 up = vec3(1.0, 0.0, 0.0);
                     if(sweepPlane == 0) {
                         vec3 center = center;
                         wP.y = 0.0;
                         center.y = 0.0;
+                        // up = vec3(1.0, 0.0, 0.0);
                     } else if(sweepPlane == 1){
                         vec3 center = center;
                         wP.z = 0.0;
                         center.z = 0.0;
+                        // up = vec3(1.0, 0.0, 0.0);
                     } else if(sweepPlane == 2){
                         vec3 center = center;
                         wP.x = 0.0;
                         center.x = 0.0;
+                        // up = vec3(0.0, 0.0, 1.0);
                     }
                     float dis = distance(wP, center);
                     float circleWidth = outerRadius - innerRadius;
                     float halfCircleWidth = circleWidth / 2.0;
                     float posPercent = (dis - innerRadius)/circleWidth;
                     if(dis < outerRadius && dis > innerRadius) {
+                        // float cosTheta = dot(up, normalize(wP - center));
                         if(fillType == 1) { // pure: 0 - linear: 1
                             bool depthTest = depth > depthFull;
                             // linear: halfCircleWidth to outerRadius && halfCircleWidth to innerRadius
                             if(!depthTest && depth < 1.0) {
-                                gl_FragColor = (dis - innerRadius) < halfCircleWidth ? vec4(mix(diff.xyz, fillColor, posPercent), 1.0) : vec4(mix(diff.xyz, fillColor, 1.0-(posPercent)), 1.0);
+                                float subsection = circleWidth / 5.0;
+                                float test = mod(dis, subsection);
+                                if((test < subsection / 40.0)) {
+                                // if((test < subsection / 40.0) && ((abs(cosTheta) > 0.95) || (abs(cosTheta) < 0.5))) {
+                                    // gl_FragColor = diff;
+                                    gl_FragColor = vec4(mix(diff.xyz, fillColor, 0.5), 1.0);
+                                } else {
+                                    gl_FragColor = diff;
+                                    // gl_FragColor = vec4(1.0);
+                                    // gl_FragColor = (dis - innerRadius) < halfCircleWidth ? vec4(mix(diff.xyz, fillColor, clamp(posPercent, 0.0, 0.4)), 1.0) : vec4(mix(diff.xyz, fillColor, clamp(1.0-(posPercent), 0.0, 0.4)), 1.0);
+                                }
+                                // gl_FragColor = (dis - innerRadius) < halfCircleWidth ? vec4(mix(diff.xyz, fillColor, posPercent), 1.0) : vec4(mix(diff.xyz, fillColor, 1.0-(posPercent)), 1.0);
+                                // gl_FragColor = (dis - innerRadius) < halfCircleWidth ? vec4(mix(diff.xyz, fillColor, clamp(posPercent, 0.0, 0.45)), 1.0) : vec4(mix(diff.xyz, fillColor, clamp(1.0-(posPercent), 0.0, 0.45)), 1.0);
                             } else {
                                 gl_FragColor = diff;
                             }
